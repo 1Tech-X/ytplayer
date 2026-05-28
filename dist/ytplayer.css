@@ -1,4 +1,4 @@
-/* YTPlayer Core Styles v1.0.3 */
+/* YTPlayer Core Styles v1.0.2 */
 
 /* Player Wrapper */
 .ytplayer-wrapper {
@@ -29,18 +29,8 @@
     height: 100%;
 }
 
-/* Overlays Container */
-.ytplayer-overlays-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 10;
-    pointer-events: none;
-}
-
-/* When inside Plyr (fullscreen), overlay container covers everything */
+/* Overlays Container (Now kept inside Plyr at all times) */
+.ytplayer-overlays-container,
 .plyr .ytplayer-overlays-container {
     position: absolute;
     top: 0;
@@ -62,13 +52,8 @@
     pointer-events: none;
 }
 
-.ytplayer-frame-layer {
-    z-index: 4;
-}
-
-.ytplayer-branding-layer {
-    z-index: 5;
-}
+.ytplayer-frame-layer { z-index: 4; }
+.ytplayer-branding-layer { z-index: 5; }
 
 /* Interaction Blocker */
 .ytplayer-interaction-blocker {
@@ -110,12 +95,8 @@
 }
 
 @keyframes ytplayer-marquee {
-    0% { 
-        transform: translateX(0); 
-    }
-    100% { 
-        transform: translateX(-50%); 
-    }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
 .ytplayer-marquee-text {
@@ -131,7 +112,7 @@
     white-space: nowrap;
 }
 
-/* Dynamic Text */
+/* Dynamic Text Base */
 .ytplayer-dynamic-text {
     position: absolute;
     z-index: 25;
@@ -142,33 +123,30 @@
     font-size: 11px;
     font-weight: 500;
     border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.5s ease-in-out;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     pointer-events: none;
     max-width: 250px;
     text-align: center;
     line-height: 1.4;
     font-family: 'Poppins', sans-serif;
-    top: 15px;
 }
 
-/* Position variants for dynamic text */
-.ytplayer-dynamic-text-left {
-    left: 15px;
-    right: auto;
-    transform: translateX(0);
+/* New Position Variants for Animation Sequence */
+.ytplayer-dynamic-text-top-left {
+    top: 20px; left: 20px; right: auto; bottom: auto;
 }
-
-.ytplayer-dynamic-text-right {
-    left: auto;
-    right: 15px;
-    transform: translateX(0);
+.ytplayer-dynamic-text-top-right {
+    top: 20px; left: auto; right: 20px; bottom: auto;
 }
-
+.ytplayer-dynamic-text-bottom-right {
+    top: auto; left: auto; right: 20px; bottom: 85px; 
+}
+.ytplayer-dynamic-text-bottom-left {
+    top: auto; left: 20px; right: auto; bottom: 85px; 
+}
 .ytplayer-dynamic-text-center {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    top: 50%; left: 50%; right: auto; bottom: auto;
 }
 
 /* User Logo */
@@ -284,16 +262,6 @@
     z-index: 9999 !important;
 }
 
-/* Fullscreen overlay adjustments */
-.plyr--fullscreen-active .ytplayer-overlays-container {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    z-index: 10 !important;
-}
-
 .plyr--fullscreen-active .ytplayer-watermark {
     bottom: 40px !important;
 }
@@ -301,10 +269,6 @@
 .plyr--fullscreen-active .ytplayer-logo {
     top: 30px !important;
     right: 40px !important;
-}
-
-.plyr--fullscreen-active .ytplayer-dynamic-text {
-    top: 20px !important;
 }
 
 .plyr--fullscreen-active .ytplayer-interaction-blocker {
@@ -324,6 +288,11 @@
         max-width: 160px;
         font-size: 10px;
     }
+
+    .ytplayer-dynamic-text-top-left { top: 15px; left: 15px; }
+    .ytplayer-dynamic-text-top-right { top: 15px; right: 15px; }
+    .ytplayer-dynamic-text-bottom-right { bottom: 65px; right: 15px; }
+    .ytplayer-dynamic-text-bottom-left { bottom: 65px; left: 15px; }
     
     .ytplayer-watermark {
         bottom: 45px;

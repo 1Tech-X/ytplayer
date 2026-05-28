@@ -1,8 +1,7 @@
 /**
  * YTPlayer - Advanced YouTube Player with Branding & Controls
- * Version: 1.0.3
+ * Version: 1.0.2
  * Author: Prashant Srivastav
- * Description: Custom YouTube player with overlays, quality controls, countdown, and animations
  */
 (function(global, factory) {
     if (typeof module === "object" && typeof module.exports === "object") {
@@ -121,7 +120,6 @@
 
             const html = `
                 <div class="ytplayer-wrapper">
-                    <!-- Overlay Container - Will be moved to Plyr on fullscreen -->
                     <div class="ytplayer-overlays-container" data-plyr-overlays>
                         ${hasMarquee ? `
                         <div class="ytplayer-watermark">
@@ -145,7 +143,7 @@
                         ` : ''}
                         
                         ${hasDynamicText ? `
-                        <div class="ytplayer-dynamic-text ytplayer-dynamic-text-left" id="ytplayer-dynamic-text"></div>
+                        <div class="ytplayer-dynamic-text ytplayer-dynamic-text-top-left" id="ytplayer-dynamic-text"></div>
                         ` : ''}
                         
                         ${hasLogo ? `
@@ -178,8 +176,6 @@
 
             container.innerHTML = html;
             this.container = container;
-            
-            // Store reference to overlays container
             this.overlaysContainer = container.querySelector('[data-plyr-overlays]');
         }
 
@@ -197,6 +193,18 @@
                 },
                 ...this.config.plyrOptions
             });
+
+            // Move overlays inside Plyr permanently so they behave perfectly in Fullscreen
+            const plyrContainer = this.container.querySelector('.plyr');
+            if (plyrContainer) {
+                if (this.overlaysContainer) {
+                    plyrContainer.appendChild(this.overlaysContainer);
+                }
+                const qualityPopup = this.container.querySelector('.ytplayer-quality-popup');
+                if (qualityPopup) {
+                    plyrContainer.appendChild(qualityPopup);
+                }
+            }
 
             this._bindEvents();
             
@@ -245,11 +253,8 @@
                 }
             });
 
-            // FULLSCREEN FIX - Move overlays into Plyr container
             this.player.on('enterfullscreen', () => {
                 this.isFullscreen = true;
-                this._moveOverlaysToPlyr();
-                
                 setTimeout(() => {
                     if (this.config.showQualityControl) {
                         this._addQualityButton();
@@ -263,8 +268,6 @@
 
             this.player.on('exitfullscreen', () => {
                 this.isFullscreen = false;
-                this._moveOverlaysBackToWrapper();
-                
                 if (screen.orientation && screen.orientation.unlock) {
                     screen.orientation.unlock();
                 }
@@ -285,46 +288,6 @@
             });
         }
 
-        _moveOverlaysToPlyr() {
-            if (!this.overlaysContainer) return;
-            
-            // Find the Plyr container that goes fullscreen
-            const plyrContainer = this.container.querySelector('.plyr');
-            if (!plyrContainer) return;
-            
-            // Move overlays container into Plyr
-            plyrContainer.appendChild(this.overlaysContainer);
-            
-            // Force visibility
-            this.overlaysContainer.style.display = 'block';
-            this.overlaysContainer.style.visibility = 'visible';
-            this.overlaysContainer.style.opacity = '1';
-            
-            // Make all children visible
-            const children = this.overlaysContainer.children;
-            for (let i = 0; i < children.length; i++) {
-                children[i].style.display = children[i].style.display || '';
-                children[i].style.visibility = 'visible';
-                children[i].style.opacity = '1';
-            }
-        }
-
-        _moveOverlaysBackToWrapper() {
-            if (!this.overlaysContainer) return;
-            
-            // Find the wrapper
-            const wrapper = this.container.querySelector('.ytplayer-wrapper');
-            if (!wrapper) return;
-            
-            // Move overlays back to wrapper (before video container)
-            const videoContainer = wrapper.querySelector('.ytplayer-video-container');
-            if (videoContainer) {
-                wrapper.insertBefore(this.overlaysContainer, videoContainer);
-            } else {
-                wrapper.appendChild(this.overlaysContainer);
-            }
-        }
-
         _setupInteractionBlocker() {
             const blocker = this.container.querySelector('.ytplayer-interaction-blocker');
             if (blocker) {
@@ -336,12 +299,18 @@
         }
 
         _addQualityButton() {
-            if (this.container.querySelector('.ytplayer-custom-quality-btn')) return;
-
             const controls = this.container.querySelector('.plyr__controls');
             if (!controls) return;
 
-            const btn = document.createElement('button');
+            // Prevent duplicating if already exists in the current active control bar
+            let btn = controls.querySelector('.ytplayer-custom-quality-btn');
+            if (btn) return;
+
+            // Remove any detached/old button elements
+            const oldBtn = this.container.querySelector('.ytplayer-custom-quality-btn');
+            if (oldBtn) oldBtn.remove();
+
+            btn = document.createElement('button');
             btn.className = 'ytplayer-custom-quality-btn plyr__control';
             btn.setAttribute('type', 'button');
             btn.setAttribute('aria-pressed', 'false');
@@ -379,22 +348,34 @@
             const textEl = this.container.querySelector('#ytplayer-dynamic-text');
             if (!textEl || !this.config.dynamicText.messages.length) return;
 
-            const positions = ['left', 'right', 'center'];
+            // Updated sequence: Left to Right -> Bottom Right to Left -> Center
+            const positions = ['top-left', 'top-right', 'bottom-right', 'bottom-left', 'center'];
             
             const updateText = () => {
-                textEl.classList.remove('ytplayer-dynamic-text-left', 'ytplayer-dynamic-text-right', 'ytplayer-dynamic-text-center');
+                // Remove all location classes
+                positions.forEach(pos => textEl.classList.remove(`ytplayer-dynamic-text-${pos}`));
                 
                 const position = positions[this.currentPosition];
                 textEl.classList.add(`ytplayer-dynamic-text-${position}`);
                 
                 textEl.style.opacity = '0';
-                textEl.style.transform = 'translateY(10px)';
+                
+                // Keep center positioning calculated accurately during the slight animation
+                if (position === 'center') {
+                    textEl.style.transform = 'translate(-50%, calc(-50% + 10px))';
+                } else {
+                    textEl.style.transform = 'translateY(10px)';
+                }
                 
                 setTimeout(() => {
                     textEl.innerHTML = this.config.dynamicText.messages[this.dynamicTextIndex];
-                    
                     textEl.style.opacity = '1';
-                    textEl.style.transform = 'translateY(0)';
+                    
+                    if (position === 'center') {
+                        textEl.style.transform = 'translate(-50%, -50%)';
+                    } else {
+                        textEl.style.transform = 'translateY(0)';
+                    }
                     
                     this.dynamicTextIndex = (this.dynamicTextIndex + 1) % this.config.dynamicText.messages.length;
                     this.currentPosition = (this.currentPosition + 1) % positions.length;
