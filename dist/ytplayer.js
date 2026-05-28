@@ -1,6 +1,6 @@
 /**
  * YTPlayer - Advanced YouTube Player with Branding & Controls
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Prashant Srivastav
  */
 (function(global, factory) {
