@@ -1,0 +1,32 @@
+{
+  "name": "ytplayer-advanced",
+  "version": "1.0.0",
+  "description": "Advanced YouTube Player with branding overlays, dynamic text, and custom controls.",
+  "main": "src/ytplayer.js",
+  "style": "src/ytplayer.css",
+  "files": [
+    "src/"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1Tech-X/ytplayer.git"
+  },
+  "keywords": [
+    "youtube",
+    "player",
+    "video",
+    "branding",
+    "plyr",
+    "custom-controls",
+    "overlay"
+  ],
+  "author": "Prashant Srivastav",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/1Tech-X/ytplayer/issues"
+  },
+  "homepage": "https://github.com/1Tech-X/ytplayer#readme"
+}

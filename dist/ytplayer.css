@@ -1,0 +1,296 @@
+/* YTPlayer Core Styles */
+
+/* Player Wrapper */
+.ytplayer-wrapper {
+    position: relative;
+    width: 100%;
+    margin: 20px 0;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    aspect-ratio: 16 / 9;
+}
+
+/* Plyr Container */
+.ytplayer-wrapper .plyr {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    z-index: 1;
+    position: relative;
+}
+
+.ytplayer-wrapper .plyr__video-wrapper {
+    background: #000;
+    z-index: 0;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+/* Overlay Images */
+.ytplayer-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    object-fit: contain;
+    pointer-events: none;
+    opacity: 1;
+    background: transparent;
+}
+
+.ytplayer-frame-layer {
+    z-index: 4;
+    object-fit: contain;
+}
+
+.ytplayer-branding-layer {
+    z-index: 5;
+    object-fit: contain;
+}
+
+/* Interaction Blocker */
+.ytplayer-interaction-blocker {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 50px);
+    z-index: 10;
+    background: transparent;
+    cursor: pointer;
+}
+
+/* Watermark/Marquee */
+.ytplayer-watermark {
+    position: absolute;
+    bottom: 35px;
+    left: 0;
+    width: 100%;
+    z-index: 15;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(7, 7, 7, 0.9), rgba(0, 0, 0, 0.5));
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 6px 0;
+    backdrop-filter: blur(4px);
+}
+
+.ytplayer-marquee {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.ytplayer-marquee-content {
+    display: inline-block;
+    animation: ytplayer-marquee 40s linear infinite;
+}
+
+@keyframes ytplayer-marquee {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.ytplayer-marquee-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin: 0 20px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Dynamic Text */
+.ytplayer-dynamic-text {
+    position: absolute;
+    z-index: 25;
+    background: rgba(0, 0, 0, 0.52);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 500;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.8s ease-in-out;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+    max-width: 125px;
+    text-align: center;
+    line-height: 1.4;
+    font-family: 'Poppins', sans-serif;
+    top: 10px;
+    left: 10px;
+}
+
+/* User Logo */
+.ytplayer-logo {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    z-index: 15;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    background: #fff;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.ytplayer-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Plyr Controls */
+.ytplayer-wrapper .plyr__control--overlaid {
+    z-index: 20 !important;
+    background: rgba(242, 102, 0, 0.9) !important;
+    box-shadow: 0 0 20px rgba(242, 102, 0, 0.5);
+}
+
+.ytplayer-wrapper .plyr__controls {
+    z-index: 50 !important;
+}
+
+/* Quality Popup */
+.ytplayer-quality-popup {
+    position: absolute;
+    bottom: 60px;
+    right: 20px;
+    background: rgba(20, 20, 20, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    padding: 5px 0;
+    display: none;
+    z-index: 2147483647;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    min-width: 120px;
+}
+
+.ytplayer-quality-popup.show {
+    display: block !important;
+}
+
+.ytplayer-quality-option {
+    padding: 8px 15px;
+    color: #ccc;
+    font-size: 13px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.ytplayer-quality-option:hover {
+    background: rgba(117, 79, 254, 0.2);
+    color: #fff;
+}
+
+.ytplayer-quality-option.active {
+    color: #754ffe;
+    font-weight: 600;
+    background: rgba(117, 79, 254, 0.1);
+}
+
+/* Custom Quality Button */
+.ytplayer-custom-quality-btn {
+    background: transparent;
+    border: 0;
+    color: #fff;
+    padding: 5px;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 12px;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.ytplayer-custom-quality-btn:hover {
+    opacity: 1;
+}
+
+/* Video Container */
+.ytplayer-video-container {
+    width: 100%;
+    height: 100%;
+}
+
+.ytplayer-video-container iframe {
+    width: 100%;
+    height: 100%;
+}
+
+/* Fullscreen Fixes */
+.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-overlay {
+    position: fixed !important;
+    object-fit: contain !important;
+}
+
+.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-logo {
+    position: fixed !important;
+    z-index: 200 !important;
+}
+
+.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-watermark {
+    position: fixed !important;
+    bottom: 0 !important;
+    z-index: 200 !important;
+}
+
+.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-quality-popup {
+    position: fixed !important;
+    z-index: 200 !important;
+}
+
+.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-interaction-blocker {
+    position: fixed !important;
+    z-index: 150 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ytplayer-logo {
+        width: 60px;
+        height: 60px;
+        top: 20px;
+        right: 20px;
+    }
+    
+    .ytplayer-dynamic-text {
+        max-width: 160px;
+    }
+}
+
+@media (max-width: 576px) {
+    .ytplayer-marquee-text {
+        font-size: 11px;
+        margin: 0 10px;
+    }
+    
+    .ytplayer-logo {
+        width: 45px;
+        height: 45px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .ytplayer-watermark {
+        bottom: 34px;
+        padding: 4px 0;
+    }
+    
+    .ytplayer-dynamic-text {
+        max-width: 150px;
+        font-size: 8px;
+    }
+}

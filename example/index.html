@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTPlayer Example</title>
+    
+    <!-- Required: Plyr CSS -->
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    
+    <!-- Required: YTPlayer CSS -->
+    <link rel="stylesheet" href="https://your-cdn.com/ytplayer.css">
+    
+    <!-- Required: Font Awesome (for icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <h1>Custom YouTube Player</h1>
+    
+    <!-- Player Container -->
+    <div id="my-player" style="max-width: 800px; margin: 0 auto;"></div>
+    
+    <!-- Load YTPlayer JS -->
+    <script src="https://your-cdn.com/ytplayer.js"></script>
+    
+    <script>
+        // Initialize player
+        const player = new YTPlayer({
+            container: '#my-player',
+            videoId: 'dQw4w9WgXcQ', // YouTube video ID
+            
+            // Branding
+            brandingImage: 'https://example.com/branding.png',
+            frameImage: 'https://example.com/frame.png',
+            userLogo: 'https://example.com/logo.png',
+            
+            // Marquee
+            marqueeText: 'Your Company Name | www.example.com',
+            
+            // Dynamic text
+            dynamicText: {
+                enabled: true,
+                messages: [
+                    'Special Offer!',
+                    'Limited Time!',
+                    'Apply Now!'
+                ],
+                interval: 3000
+            },
+            
+            // Auto play
+            autoPlay: false,
+            
+            // Callbacks
+            onReady: function(player) {
+                console.log('Player is ready!');
+            },
+            onPlay: function(player) {
+                console.log('Video is playing');
+            }
+        });
+        
+        // Control player programmatically
+        // player.play();
+        // player.pause();
+        // player.setQuality('1080');
+        // player.updateBranding('new-image.png');
+    </script>
+</body>
+</html>
