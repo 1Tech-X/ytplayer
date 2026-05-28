@@ -1,6 +1,6 @@
 /**
  * YTPlayer - Advanced YouTube Player with Branding & Controls
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Prashant Srivastav
  * Description: Custom YouTube player with overlays, quality controls, countdown, and animations
  */
@@ -24,19 +24,19 @@
         constructor(options = {}) {
             // Default configuration
             this.config = {
-                container: null,           // Container element or selector
-                videoId: '',               // YouTube video ID
-                brandingImage: '',         // User branding overlay image
-                youtubeBranding: '',       // YouTube branding overlay image
-                frameImage: '',            // Frame overlay image
-                userLogo: '',              // User logo (Default is empty, won't display if empty)
-                marqueeText: '',           // Text for marquee
-                autoPlay: false,           // Auto play video
-                showQualityControl: true,  // Show quality control
-                showWatermark: true,       // Show bottom watermark
-                showLogo: true,            // Show user logo
-                showMarquee: true,         // Show marquee text
-                controls: [                // Plyr controls
+                container: null,
+                videoId: '',
+                brandingImage: '',
+                youtubeBranding: '',
+                frameImage: '',
+                userLogo: '',
+                marqueeText: '',
+                autoPlay: false,
+                showQualityControl: true,
+                showWatermark: true,
+                showLogo: true,
+                showMarquee: true,
+                controls: [
                     'play-large',
                     'play',
                     'progress',
@@ -45,35 +45,29 @@
                     'volume',
                     'fullscreen'
                 ],
-                plyrOptions: {},           // Additional Plyr options
-                onReady: null,             // Callback when player is ready
-                onPlay: null,              // Callback on play
-                onPause: null,             // Callback on pause
-                onEnd: null,               // Callback on end
-                dynamicText: {             // Animated text configuration
+                plyrOptions: {},
+                onReady: null,
+                onPlay: null,
+                onPause: null,
+                onEnd: null,
+                dynamicText: {
                     enabled: false,
                     messages: [],
-                    position: 'top-left',
                     interval: 3000
                 }
             };
 
-            // Merge user options
             Object.assign(this.config, options);
 
-            // Internal state
             this.player = null;
             this.currentQuality = '720';
             this.dynamicTextIndex = 0;
             this.dynamicTextInterval = null;
+            this.currentPosition = 0; // 0: left, 1: right, 2: center
 
-            // Validate and initialize
             this._init();
         }
 
-        /**
-         * Initialize the player
-         */
         _init() {
             if (!this.config.container || !this.config.videoId) {
                 console.error('YTPlayer: Container and videoId are required');
@@ -86,18 +80,13 @@
                 .catch(error => console.error('YTPlayer initialization error:', error));
         }
 
-        /**
-         * Load required dependencies (Plyr)
-         */
         _loadDependencies() {
             return new Promise((resolve, reject) => {
-                // Check if Plyr is already loaded
                 if (typeof Plyr !== 'undefined') {
                     resolve();
                     return;
                 }
 
-                // Load Plyr CSS
                 if (!document.querySelector('link[href*="plyr.css"]')) {
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
@@ -105,7 +94,6 @@
                     document.head.appendChild(link);
                 }
 
-                // Load Plyr JS
                 const script = document.createElement('script');
                 script.src = 'https://cdn.plyr.io/3.7.8/plyr.js';
                 script.onload = resolve;
@@ -114,9 +102,6 @@
             });
         }
 
-        /**
-         * Build the HTML structure
-         */
         _buildHTML() {
             const container = typeof this.config.container === 'string' 
                 ? document.querySelector(this.config.container) 
@@ -126,7 +111,6 @@
                 throw new Error('YTPlayer: Container not found');
             }
 
-            // Determine overlay image
             let overlayImageSrc = '';
             if (this.config.brandingImage && this.config.brandingImage.trim() !== '') {
                 overlayImageSrc = this.config.brandingImage;
@@ -134,7 +118,6 @@
                 overlayImageSrc = this.config.youtubeBranding;
             }
 
-            // Strict rendering checks
             const hasMarquee = this.config.showMarquee && this.config.marqueeText && this.config.marqueeText.trim() !== '';
             const hasDynamicText = this.config.dynamicText && this.config.dynamicText.enabled && this.config.dynamicText.messages && this.config.dynamicText.messages.length > 0;
             const hasLogo = this.config.showLogo && this.config.userLogo && this.config.userLogo.trim() !== '';
@@ -145,6 +128,8 @@
                     <div class="ytplayer-watermark">
                         <div class="ytplayer-marquee">
                             <div class="ytplayer-marquee-content">
+                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
                                 <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
                                 <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
                             </div>
@@ -161,7 +146,7 @@
                     ` : ''}
                     
                     ${hasDynamicText ? `
-                    <div class="ytplayer-dynamic-text" id="ytplayer-dynamic-text"></div>
+                    <div class="ytplayer-dynamic-text ytplayer-dynamic-text-left" id="ytplayer-dynamic-text"></div>
                     ` : ''}
                     
                     ${hasLogo ? `
@@ -195,9 +180,6 @@
             this.container = container;
         }
 
-        /**
-         * Setup Plyr player
-         */
         _setupPlayer() {
             const plyrElement = this.container.querySelector('#ytplayer-video');
             
@@ -220,11 +202,7 @@
             }
         }
 
-        /**
-         * Bind player events
-         */
         _bindEvents() {
-            // Player ready
             this.player.on('ready', () => {
                 if (this.config.showQualityControl) {
                     this._addQualityButton();
@@ -235,49 +213,45 @@
                     this._startDynamicText();
                 }
 
-                // Execute ready callback
                 if (typeof this.config.onReady === 'function') {
                     this.config.onReady(this);
                 }
             });
 
-            // Play event
             this.player.on('play', () => {
                 if (typeof this.config.onPlay === 'function') {
                     this.config.onPlay(this);
                 }
             });
 
-            // Pause event
             this.player.on('pause', () => {
                 if (typeof this.config.onPause === 'function') {
                     this.config.onPause(this);
                 }
             });
 
-            // End event
             this.player.on('ended', () => {
                 if (typeof this.config.onEnd === 'function') {
                     this.config.onEnd(this);
                 }
             });
 
-            // Controls shown - ensure quality button
             this.player.on('controlsshown', () => {
                 if (this.config.showQualityControl) {
                     this._addQualityButton();
                 }
             });
 
-            // Fullscreen events
+            // Fullscreen events with overlay visibility fix
             this.player.on('enterfullscreen', () => {
                 setTimeout(() => {
                     if (this.config.showQualityControl) {
                         this._addQualityButton();
                     }
+                    // Ensure all overlays remain visible in fullscreen
+                    this._updateFullscreenOverlays(true);
                 }, 200);
                 
-                // Lock orientation if available
                 if (screen.orientation && screen.orientation.lock) {
                     screen.orientation.lock('landscape').catch(() => {});
                 }
@@ -287,9 +261,9 @@
                 if (screen.orientation && screen.orientation.unlock) {
                     screen.orientation.unlock();
                 }
+                this._updateFullscreenOverlays(false);
             });
 
-            // Quality selection
             this.container.addEventListener('click', (e) => {
                 if (e.target.classList.contains('ytplayer-quality-option')) {
                     const quality = e.target.dataset.quality;
@@ -297,7 +271,6 @@
                 }
             });
 
-            // Close quality popup on outside click
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.ytplayer-quality-popup') && 
                     !e.target.closest('.ytplayer-custom-quality-btn')) {
@@ -306,9 +279,19 @@
             });
         }
 
-        /**
-         * Setup interaction blocker (click to play/pause)
-         */
+        _updateFullscreenOverlays(isFullscreen) {
+            const wrapper = this.container.querySelector('.ytplayer-wrapper');
+            const overlays = wrapper.querySelectorAll('.ytplayer-overlay, .ytplayer-logo, .ytplayer-watermark, .ytplayer-dynamic-text, .ytplayer-interaction-blocker');
+            
+            overlays.forEach(overlay => {
+                if (isFullscreen) {
+                    overlay.style.display = overlay.style.display || '';
+                    overlay.style.visibility = 'visible';
+                    overlay.style.opacity = '1';
+                }
+            });
+        }
+
         _setupInteractionBlocker() {
             const blocker = this.container.querySelector('.ytplayer-interaction-blocker');
             if (blocker) {
@@ -319,9 +302,6 @@
             }
         }
 
-        /**
-         * Add quality control button
-         */
         _addQualityButton() {
             if (this.container.querySelector('.ytplayer-custom-quality-btn')) return;
 
@@ -332,7 +312,7 @@
             btn.className = 'ytplayer-custom-quality-btn plyr__control';
             btn.setAttribute('type', 'button');
             btn.setAttribute('aria-pressed', 'false');
-            btn.innerHTML = `<i class="fas fa-cog"></i> <span>${this.currentQuality}p</span>`;
+            btn.innerHTML = `<svg aria-hidden="true" focusable="false" style="width:18px;height:18px;fill:currentColor;"><use xlink:href="#plyr-settings"></use></svg> <span>${this.currentQuality}p</span>`;
 
             const fsBtn = controls.querySelector('[data-plyr="fullscreen"]');
             if (fsBtn) {
@@ -348,9 +328,6 @@
             });
         }
 
-        /**
-         * Toggle quality popup
-         */
         _toggleQualityPopup() {
             const popup = this.container.querySelector('.ytplayer-quality-popup');
             if (popup) {
@@ -358,9 +335,6 @@
             }
         }
 
-        /**
-         * Hide quality popup
-         */
         _hideQualityPopup() {
             const popup = this.container.querySelector('.ytplayer-quality-popup');
             if (popup) {
@@ -368,35 +342,45 @@
             }
         }
 
-        /**
-         * Start dynamic text animation
-         */
         _startDynamicText() {
             const textEl = this.container.querySelector('#ytplayer-dynamic-text');
             if (!textEl || !this.config.dynamicText.messages.length) return;
 
+            const positions = ['left', 'right', 'center'];
+            
             const updateText = () => {
+                // Remove previous position classes
+                textEl.classList.remove('ytplayer-dynamic-text-left', 'ytplayer-dynamic-text-right', 'ytplayer-dynamic-text-center');
+                
+                // Add current position class
+                const position = positions[this.currentPosition];
+                textEl.classList.add(`ytplayer-dynamic-text-${position}`);
+                
+                // Fade out
                 textEl.style.opacity = '0';
+                textEl.style.transform = 'translateY(10px)';
+                
                 setTimeout(() => {
+                    // Update text
                     textEl.innerHTML = this.config.dynamicText.messages[this.dynamicTextIndex];
+                    
+                    // Fade in
                     textEl.style.opacity = '1';
-                    this.dynamicTextIndex = (this.dynamicTextIndex + 1) % 
-                        this.config.dynamicText.messages.length;
-                }, 800);
+                    textEl.style.transform = 'translateY(0)';
+                    
+                    // Update indices
+                    this.dynamicTextIndex = (this.dynamicTextIndex + 1) % this.config.dynamicText.messages.length;
+                    this.currentPosition = (this.currentPosition + 1) % positions.length;
+                }, 500);
             };
 
             updateText();
             this.dynamicTextInterval = setInterval(updateText, this.config.dynamicText.interval);
         }
 
-        /**
-         * Set video quality
-         * @param {string} quality - Quality level (360, 480, 720, 1080)
-         */
         setQuality(quality) {
             this.currentQuality = quality;
             
-            // Update active state
             this.container.querySelectorAll('.ytplayer-quality-option').forEach(opt => {
                 opt.classList.remove('active');
                 if (opt.dataset.quality === quality) {
@@ -404,7 +388,6 @@
                 }
             });
 
-            // Update button text
             const btnText = this.container.querySelector('.ytplayer-custom-quality-btn span');
             if (btnText) {
                 btnText.textContent = quality + 'p';
@@ -412,7 +395,6 @@
 
             this._hideQualityPopup();
 
-            // Set YouTube quality
             if (this.player && this.player.embed) {
                 const qualityMap = {
                     '1080': 'hd1080',
@@ -427,10 +409,6 @@
             }
         }
 
-        /**
-         * Update branding overlay
-         * @param {string} imageUrl - New branding image URL
-         */
         updateBranding(imageUrl) {
             const branding = this.container.querySelector('.ytplayer-branding-layer');
             if (!branding) {
@@ -447,10 +425,6 @@
             }
         }
 
-        /**
-         * Update user logo
-         * @param {string} imageUrl - New logo URL
-         */
         updateLogo(imageUrl) {
             const logo = this.container.querySelector('.ytplayer-logo img');
             if (logo) {
@@ -458,10 +432,6 @@
             }
         }
 
-        /**
-         * Update marquee text
-         * @param {string} text - New marquee text
-         */
         updateMarquee(text) {
             const marqueeTexts = this.container.querySelectorAll('.ytplayer-marquee-text');
             marqueeTexts.forEach(el => {
@@ -469,54 +439,36 @@
             });
         }
 
-        /**
-         * Play video
-         */
         play() {
             if (this.player) {
                 this.player.play();
             }
         }
 
-        /**
-         * Pause video
-         */
         pause() {
             if (this.player) {
                 this.player.pause();
             }
         }
 
-        /**
-         * Toggle play/pause
-         */
         togglePlay() {
             if (this.player) {
                 this.player.togglePlay();
             }
         }
 
-        /**
-         * Enter fullscreen
-         */
         enterFullscreen() {
             if (this.player) {
                 this.player.fullscreen.enter();
             }
         }
 
-        /**
-         * Exit fullscreen
-         */
         exitFullscreen() {
             if (this.player) {
                 this.player.fullscreen.exit();
             }
         }
 
-        /**
-         * Destroy the player
-         */
         destroy() {
             if (this.dynamicTextInterval) {
                 clearInterval(this.dynamicTextInterval);
