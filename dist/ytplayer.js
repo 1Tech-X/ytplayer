@@ -1,6 +1,6 @@
 /**
  * YTPlayer - Advanced YouTube Player with Branding & Controls
- * Version: 1.0.0
+ * Version: 1.0.1
  * Author: Prashant Srivastav
  * Description: Custom YouTube player with overlays, quality controls, countdown, and animations
  */
@@ -29,7 +29,7 @@
                 brandingImage: '',         // User branding overlay image
                 youtubeBranding: '',       // YouTube branding overlay image
                 frameImage: '',            // Frame overlay image
-                userLogo: 'assets/img/user.png', // User logo
+                userLogo: '',              // User logo (Default is empty, won't display if empty)
                 marqueeText: '',           // Text for marquee
                 autoPlay: false,           // Auto play video
                 showQualityControl: true,  // Show quality control
@@ -134,9 +134,14 @@
                 overlayImageSrc = this.config.youtubeBranding;
             }
 
+            // Strict rendering checks
+            const hasMarquee = this.config.showMarquee && this.config.marqueeText && this.config.marqueeText.trim() !== '';
+            const hasDynamicText = this.config.dynamicText && this.config.dynamicText.enabled && this.config.dynamicText.messages && this.config.dynamicText.messages.length > 0;
+            const hasLogo = this.config.showLogo && this.config.userLogo && this.config.userLogo.trim() !== '';
+
             const html = `
                 <div class="ytplayer-wrapper">
-                    ${this.config.showMarquee && this.config.marqueeText ? `
+                    ${hasMarquee ? `
                     <div class="ytplayer-watermark">
                         <div class="ytplayer-marquee">
                             <div class="ytplayer-marquee-content">
@@ -155,13 +160,13 @@
                     <img src="${overlayImageSrc}" alt="Overlay" class="ytplayer-overlay ytplayer-branding-layer">
                     ` : ''}
                     
-                    ${this.config.dynamicText.enabled ? `
+                    ${hasDynamicText ? `
                     <div class="ytplayer-dynamic-text" id="ytplayer-dynamic-text"></div>
                     ` : ''}
                     
-                    ${this.config.showLogo ? `
+                    ${hasLogo ? `
                     <div class="ytplayer-logo">
-                        <img src="${this.config.userLogo}" alt="Logo" onerror="this.src='assets/img/user.png'">
+                        <img src="${this.config.userLogo}" alt="Logo">
                     </div>
                     ` : ''}
                     
@@ -226,7 +231,7 @@
                 }
                 this._setupInteractionBlocker();
                 
-                if (this.config.dynamicText.enabled) {
+                if (this.config.dynamicText && this.config.dynamicText.enabled && this.config.dynamicText.messages && this.config.dynamicText.messages.length > 0) {
                     this._startDynamicText();
                 }
 
