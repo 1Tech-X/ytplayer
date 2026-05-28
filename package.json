@@ -1,6 +1,6 @@
 {
   "name": "ytplayer-advanced",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "Advanced YouTube Player with branding overlays, dynamic text, and custom controls.",
   "main": "src/ytplayer.js",
   "style": "src/ytplayer.css",
