@@ -1,4 +1,4 @@
-/* YTPlayer Core Styles */
+/* YTPlayer Core Styles v1.0.3 */
 
 /* Player Wrapper */
 .ytplayer-wrapper {
@@ -29,6 +29,28 @@
     height: 100%;
 }
 
+/* Overlays Container */
+.ytplayer-overlays-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* When inside Plyr (fullscreen), overlay container covers everything */
+.plyr .ytplayer-overlays-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    pointer-events: none;
+}
+
 /* Overlay Images */
 .ytplayer-overlay {
     position: absolute;
@@ -36,21 +58,16 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 5;
     object-fit: contain;
     pointer-events: none;
-    opacity: 1;
-    background: transparent;
 }
 
 .ytplayer-frame-layer {
     z-index: 4;
-    object-fit: contain;
 }
 
 .ytplayer-branding-layer {
     z-index: 5;
-    object-fit: contain;
 }
 
 /* Interaction Blocker */
@@ -63,12 +80,13 @@
     z-index: 10;
     background: transparent;
     cursor: pointer;
+    pointer-events: all;
 }
 
 /* Watermark/Marquee */
 .ytplayer-watermark {
     position: absolute;
-    bottom: 45px;
+    bottom: 50px;
     left: 0;
     width: 100%;
     z-index: 15;
@@ -107,7 +125,7 @@
     color: rgba(255, 255, 255, 0.95);
     font-weight: 500;
     letter-spacing: 0.5px;
-    padding: 0 30px;
+    padding: 0 40px;
     text-transform: uppercase;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
     white-space: nowrap;
@@ -127,7 +145,7 @@
     transition: all 0.5s ease-in-out;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
     pointer-events: none;
-    max-width: 200px;
+    max-width: 250px;
     text-align: center;
     line-height: 1.4;
     font-family: 'Poppins', sans-serif;
@@ -166,7 +184,6 @@
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     background: #fff;
     overflow: hidden;
-    pointer-events: none;
 }
 
 .ytplayer-logo img {
@@ -183,7 +200,7 @@
 }
 
 .ytplayer-wrapper .plyr__controls {
-    z-index: 50 !important;
+    z-index: 100 !important;
 }
 
 /* Quality Popup */
@@ -257,8 +274,8 @@
     height: 100%;
 }
 
-/* Fullscreen Fixes - CRITICAL */
-.ytplayer-wrapper .plyr--fullscreen-active {
+/* Fullscreen - Plyr specific */
+.plyr--fullscreen-active {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
@@ -267,60 +284,31 @@
     z-index: 9999 !important;
 }
 
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-overlay {
-    position: fixed !important;
+/* Fullscreen overlay adjustments */
+.plyr--fullscreen-active .ytplayer-overlays-container {
+    position: absolute !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    object-fit: contain !important;
-    z-index: 100 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10 !important;
 }
 
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-logo {
-    position: fixed !important;
+.plyr--fullscreen-active .ytplayer-watermark {
+    bottom: 40px !important;
+}
+
+.plyr--fullscreen-active .ytplayer-logo {
     top: 30px !important;
     right: 40px !important;
-    z-index: 200 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
 }
 
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-watermark {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    z-index: 200 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+.plyr--fullscreen-active .ytplayer-dynamic-text {
+    top: 20px !important;
 }
 
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-dynamic-text {
-    position: fixed !important;
-    z-index: 200 !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-quality-popup {
-    position: fixed !important;
-    z-index: 200 !important;
-}
-
-.ytplayer-wrapper .plyr--fullscreen-active .ytplayer-interaction-blocker {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    z-index: 150 !important;
+.plyr--fullscreen-active .ytplayer-interaction-blocker {
+    height: calc(100% - 40px) !important;
 }
 
 /* Responsive */
@@ -345,7 +333,7 @@
 @media (max-width: 576px) {
     .ytplayer-marquee-text {
         font-size: 11px;
-        padding: 0 15px;
+        padding: 0 20px;
     }
     
     .ytplayer-logo {

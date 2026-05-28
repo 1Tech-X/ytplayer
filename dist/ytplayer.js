@@ -1,6 +1,6 @@
 /**
  * YTPlayer - Advanced YouTube Player with Branding & Controls
- * Version: 1.0.2
+ * Version: 1.0.3
  * Author: Prashant Srivastav
  * Description: Custom YouTube player with overlays, quality controls, countdown, and animations
  */
@@ -17,12 +17,7 @@
     'use strict';
 
     class YTPlayer {
-        /**
-         * Initialize YTPlayer
-         * @param {Object} options Configuration options
-         */
         constructor(options = {}) {
-            // Default configuration
             this.config = {
                 container: null,
                 videoId: '',
@@ -63,7 +58,9 @@
             this.currentQuality = '720';
             this.dynamicTextIndex = 0;
             this.dynamicTextInterval = null;
-            this.currentPosition = 0; // 0: left, 1: right, 2: center
+            this.currentPosition = 0;
+            this.overlayElements = {};
+            this.isFullscreen = false;
 
             this._init();
         }
@@ -124,38 +121,41 @@
 
             const html = `
                 <div class="ytplayer-wrapper">
-                    ${hasMarquee ? `
-                    <div class="ytplayer-watermark">
-                        <div class="ytplayer-marquee">
-                            <div class="ytplayer-marquee-content">
-                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
-                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
-                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
-                                <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                    <!-- Overlay Container - Will be moved to Plyr on fullscreen -->
+                    <div class="ytplayer-overlays-container" data-plyr-overlays>
+                        ${hasMarquee ? `
+                        <div class="ytplayer-watermark">
+                            <div class="ytplayer-marquee">
+                                <div class="ytplayer-marquee-content">
+                                    <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                                    <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                                    <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                                    <span class="ytplayer-marquee-text">${this.config.marqueeText}</span>
+                                </div>
                             </div>
                         </div>
+                        ` : ''}
+                        
+                        ${this.config.frameImage ? `
+                        <img src="${this.config.frameImage}" alt="Frame" class="ytplayer-overlay ytplayer-frame-layer">
+                        ` : ''}
+                        
+                        ${overlayImageSrc ? `
+                        <img src="${overlayImageSrc}" alt="Overlay" class="ytplayer-overlay ytplayer-branding-layer">
+                        ` : ''}
+                        
+                        ${hasDynamicText ? `
+                        <div class="ytplayer-dynamic-text ytplayer-dynamic-text-left" id="ytplayer-dynamic-text"></div>
+                        ` : ''}
+                        
+                        ${hasLogo ? `
+                        <div class="ytplayer-logo">
+                            <img src="${this.config.userLogo}" alt="Logo">
+                        </div>
+                        ` : ''}
+                        
+                        <div class="ytplayer-interaction-blocker"></div>
                     </div>
-                    ` : ''}
-                    
-                    ${this.config.frameImage ? `
-                    <img src="${this.config.frameImage}" alt="Frame" class="ytplayer-overlay ytplayer-frame-layer">
-                    ` : ''}
-                    
-                    ${overlayImageSrc ? `
-                    <img src="${overlayImageSrc}" alt="Overlay" class="ytplayer-overlay ytplayer-branding-layer">
-                    ` : ''}
-                    
-                    ${hasDynamicText ? `
-                    <div class="ytplayer-dynamic-text ytplayer-dynamic-text-left" id="ytplayer-dynamic-text"></div>
-                    ` : ''}
-                    
-                    ${hasLogo ? `
-                    <div class="ytplayer-logo">
-                        <img src="${this.config.userLogo}" alt="Logo">
-                    </div>
-                    ` : ''}
-                    
-                    <div class="ytplayer-interaction-blocker"></div>
                     
                     ${this.config.showQualityControl ? `
                     <div class="ytplayer-quality-popup">
@@ -178,6 +178,9 @@
 
             container.innerHTML = html;
             this.container = container;
+            
+            // Store reference to overlays container
+            this.overlaysContainer = container.querySelector('[data-plyr-overlays]');
         }
 
         _setupPlayer() {
@@ -242,14 +245,15 @@
                 }
             });
 
-            // Fullscreen events with overlay visibility fix
+            // FULLSCREEN FIX - Move overlays into Plyr container
             this.player.on('enterfullscreen', () => {
+                this.isFullscreen = true;
+                this._moveOverlaysToPlyr();
+                
                 setTimeout(() => {
                     if (this.config.showQualityControl) {
                         this._addQualityButton();
                     }
-                    // Ensure all overlays remain visible in fullscreen
-                    this._updateFullscreenOverlays(true);
                 }, 200);
                 
                 if (screen.orientation && screen.orientation.lock) {
@@ -258,10 +262,12 @@
             });
 
             this.player.on('exitfullscreen', () => {
+                this.isFullscreen = false;
+                this._moveOverlaysBackToWrapper();
+                
                 if (screen.orientation && screen.orientation.unlock) {
                     screen.orientation.unlock();
                 }
-                this._updateFullscreenOverlays(false);
             });
 
             this.container.addEventListener('click', (e) => {
@@ -279,17 +285,44 @@
             });
         }
 
-        _updateFullscreenOverlays(isFullscreen) {
-            const wrapper = this.container.querySelector('.ytplayer-wrapper');
-            const overlays = wrapper.querySelectorAll('.ytplayer-overlay, .ytplayer-logo, .ytplayer-watermark, .ytplayer-dynamic-text, .ytplayer-interaction-blocker');
+        _moveOverlaysToPlyr() {
+            if (!this.overlaysContainer) return;
             
-            overlays.forEach(overlay => {
-                if (isFullscreen) {
-                    overlay.style.display = overlay.style.display || '';
-                    overlay.style.visibility = 'visible';
-                    overlay.style.opacity = '1';
-                }
-            });
+            // Find the Plyr container that goes fullscreen
+            const plyrContainer = this.container.querySelector('.plyr');
+            if (!plyrContainer) return;
+            
+            // Move overlays container into Plyr
+            plyrContainer.appendChild(this.overlaysContainer);
+            
+            // Force visibility
+            this.overlaysContainer.style.display = 'block';
+            this.overlaysContainer.style.visibility = 'visible';
+            this.overlaysContainer.style.opacity = '1';
+            
+            // Make all children visible
+            const children = this.overlaysContainer.children;
+            for (let i = 0; i < children.length; i++) {
+                children[i].style.display = children[i].style.display || '';
+                children[i].style.visibility = 'visible';
+                children[i].style.opacity = '1';
+            }
+        }
+
+        _moveOverlaysBackToWrapper() {
+            if (!this.overlaysContainer) return;
+            
+            // Find the wrapper
+            const wrapper = this.container.querySelector('.ytplayer-wrapper');
+            if (!wrapper) return;
+            
+            // Move overlays back to wrapper (before video container)
+            const videoContainer = wrapper.querySelector('.ytplayer-video-container');
+            if (videoContainer) {
+                wrapper.insertBefore(this.overlaysContainer, videoContainer);
+            } else {
+                wrapper.appendChild(this.overlaysContainer);
+            }
         }
 
         _setupInteractionBlocker() {
@@ -349,26 +382,20 @@
             const positions = ['left', 'right', 'center'];
             
             const updateText = () => {
-                // Remove previous position classes
                 textEl.classList.remove('ytplayer-dynamic-text-left', 'ytplayer-dynamic-text-right', 'ytplayer-dynamic-text-center');
                 
-                // Add current position class
                 const position = positions[this.currentPosition];
                 textEl.classList.add(`ytplayer-dynamic-text-${position}`);
                 
-                // Fade out
                 textEl.style.opacity = '0';
                 textEl.style.transform = 'translateY(10px)';
                 
                 setTimeout(() => {
-                    // Update text
                     textEl.innerHTML = this.config.dynamicText.messages[this.dynamicTextIndex];
                     
-                    // Fade in
                     textEl.style.opacity = '1';
                     textEl.style.transform = 'translateY(0)';
                     
-                    // Update indices
                     this.dynamicTextIndex = (this.dynamicTextIndex + 1) % this.config.dynamicText.messages.length;
                     this.currentPosition = (this.currentPosition + 1) % positions.length;
                 }, 500);
@@ -416,9 +443,9 @@
                 newBranding.src = imageUrl;
                 newBranding.alt = 'Overlay';
                 newBranding.className = 'ytplayer-overlay ytplayer-branding-layer';
-                const wrapper = this.container.querySelector('.ytplayer-wrapper');
-                if (wrapper) {
-                    wrapper.insertBefore(newBranding, wrapper.querySelector('.ytplayer-video-container'));
+                const overlaysContainer = this.container.querySelector('[data-plyr-overlays]');
+                if (overlaysContainer) {
+                    overlaysContainer.appendChild(newBranding);
                 }
             } else {
                 branding.src = imageUrl;
